@@ -11,10 +11,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3 # 업데이트된 버전 사용
+        uses: actions/checkout@v3
 
       - name: Setup SSH
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" | base64 --decode > /tmp/deploy_key
           chmod 600 /tmp/deploy_key
           ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
