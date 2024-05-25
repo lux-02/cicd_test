@@ -1,0 +1,29 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        run: |
+          echo "${{ secrets.SSH_KEY }}" | base64 --decode > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          ssh -i /tmp/deploy_key $SSH_USER@$SSH_HOST "mkdir -p ~/deployments/my-next-app"
+          scp -i /tmp/deploy_key -r ./ $SSH_USER@$SSH_HOST:~/deployments/my-next-app
+          ssh -i /tmp/deploy_key $SSH_USER@$SSH_HOST "cd ~/deployments/my-next-app && npm install && npm run build && pm2 restart my-next-app || pm2 start npm --name 'my-next-app' -- start"
