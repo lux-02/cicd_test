@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3 # 업데이트된 버전 사용
 
       - name: Setup SSH
         run: |
