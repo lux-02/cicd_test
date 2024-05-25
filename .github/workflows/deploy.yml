@@ -25,6 +25,18 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          ssh -i /tmp/deploy_key $SSH_USER@${{ secrets.SSH_HOST }} "mkdir -p ~/deployments/my-next-app"
+          ssh -i /tmp/deploy_key $SSH_USER@${{ secrets.SSH_HOST }} << 'EOF'
+            sudo apt update
+            sudo apt install -y nodejs npm
+            sudo npm install -g pm2
+            mkdir -p ~/deployments/my-next-app
+            exit
+          EOF
           scp -i /tmp/deploy_key -r ./* $SSH_USER@${{ secrets.SSH_HOST }}:~/deployments/my-next-app
-          ssh -i /tmp/deploy_key $SSH_USER@${{ secrets.SSH_HOST }} "cd ~/deployments/my-next-app && npm install && npm run build && pm2 restart my-next-app || pm2 start npm --name 'my-next-app' -- start"
+          ssh -i /tmp/deploy_key $SSH_USER@${{ secrets.SSH_HOST }} << 'EOF'
+            cd ~/deployments/my-next-app
+            npm install
+            npm run build
+            pm2 restart my-next-app || pm2 start npm --name 'my-next-app' -- start
+            exit
+          EOF
